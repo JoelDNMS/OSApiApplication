@@ -5,6 +5,7 @@
 package joel.OSApiApplication.domain.model;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -13,7 +14,7 @@ import jakarta.persistence.Id;
  *
  * @author sesideva
  */
-    
+    @Entity
     public class Cliente {
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)

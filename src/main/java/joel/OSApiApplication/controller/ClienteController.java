@@ -4,14 +4,20 @@
  */
 package joel.OSApiApplication.controller;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import joel.OSApiApplication.domain.model.Cliente;
+import joel.OSApiApplication.domain.repository.ClienteRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
 
 /**
  *
@@ -19,26 +25,43 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 public class ClienteController {
-    
-    @PersistenceContext
-    private EntityManager manager;
-            
-    List<Cliente> listaClientes;
-   
+
+    @Autowired
+    private ClienteRepository clienteRepository;
+
     @GetMapping("/clientes")
     public List<Cliente> listas() {
+        //return clienteRepository.findAll();
+        return clienteRepository.findByNome("SantzK");
+    }
+
+    @GetMapping("/clientes/{clienteID}")
+    public ResponseEntity<Cliente> buscar(@PathVariable Long clienteID) {
+        Optional<Cliente> cliente = clienteRepository.findById(clienteID);
+
+        if (cliente.isPresent()) {
+            return ResponseEntity.ok(cliente.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping("/clientes")
+    @ResponseStatus(HttpStatus.CREATED)
+    public Cliente adicionar(@RequestBody Cliente cliente) {
+
+        return clienteRepository.save(cliente);
+    }
+    
+    @PutMapping("/clientes/{clienteID}")
+    public ResponseEntity<Cliente> atualizar(@PathVariable Long clienteID, @RequestBody Cliente cliente) {
         
-        listaClientes = new ArrayList<Cliente>();
-        listaClientes.add(new Cliente(1, "SantzK", "santzk69@teste.com", "11-22222-3333"));
-        listaClientes.add(new Cliente(1, "Vitoria", "ViToria@teste.com", "11-33333-4444"));
-        listaClientes.add(new Cliente(1, "Lucas", "luscasDev@teste.com", "11-44444-5555"));
-        listaClientes.add(new Cliente(1, "Lucas", "luscasDev@teste.com", "11-44444-5555"));
-        listaClientes.add(new Cliente(1, "kge", "kge@teste.com", "11-55555-5555"));
-        listaClientes.add(new Cliente(2, "Rodrigo", "Rodri@teste.com", "11-66666-7777"));
-        listaClientes.add(new Cliente(3, "Maiara", "Mai@teste.com", "11-88888-9999"));
-        listaClientes.add(new Cliente(4, "Americo", "americo@teste.com", "11-22333-4455"));
+        if (!clienteRepository.existsById(clienteID)) {
+            return ResponseEntity.notFound().build();
+        }
         
-        return manager.createQuery("from Cliente", Cliente.class)
-                .getResultList();
+        cliente.setId(clienteID);
+        cliente = clienteRepository.save(cliente);
+        return ResponseEntity.ok(cliente);
     }
 }

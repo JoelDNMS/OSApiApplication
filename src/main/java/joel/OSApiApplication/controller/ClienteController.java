@@ -4,6 +4,9 @@
  */
 package joel.OSApiApplication.controller;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 import joel.OSApiApplication.domain.model.Cliente;
@@ -11,6 +14,7 @@ import joel.OSApiApplication.domain.repository.ClienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+
 /**
  *
  * @author sesideva
@@ -26,13 +31,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class ClienteController {
 
+    @PersistenceContext
+    private EntityManager manager;
+    
     @Autowired
     private ClienteRepository clienteRepository;
-
+    
     @GetMapping("/clientes")
     public List<Cliente> listas() {
         //return clienteRepository.findAll();
-        return clienteRepository.findByNome("SantzK");
+        return manager.createQuery("from Cliente", Cliente.class).getResultList();
     }
 
     @GetMapping("/clientes/{clienteID}")
@@ -48,14 +56,14 @@ public class ClienteController {
 
     @PostMapping("/clientes")
     @ResponseStatus(HttpStatus.CREATED)
-    public Cliente adicionar(@RequestBody Cliente cliente) {
+    public Cliente adicionar(@Valid @RequestBody Cliente cliente) {
 
         return clienteRepository.save(cliente);
     }
     
     @PutMapping("/clientes/{clienteID}")
-    public ResponseEntity<Cliente> atualizar(@PathVariable Long clienteID, @RequestBody Cliente cliente) {
-        
+    public ResponseEntity<Cliente> atualizar(@Valid @PathVariable Long clienteID, @RequestBody Cliente cliente) {
+         
         if (!clienteRepository.existsById(clienteID)) {
             return ResponseEntity.notFound().build();
         }
@@ -63,5 +71,15 @@ public class ClienteController {
         cliente.setId(clienteID);
         cliente = clienteRepository.save(cliente);
         return ResponseEntity.ok(cliente);
+    }
+    @DeleteMapping("/clientes/{clienteID}")
+    public ResponseEntity<Void> excluir (@PathVariable Long clienteID) {
+        
+        if(!clienteRepository.existsById(clienteID)) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        clienteRepository.deleteById(clienteID);
+        return ResponseEntity.noContent().build();
     }
 }

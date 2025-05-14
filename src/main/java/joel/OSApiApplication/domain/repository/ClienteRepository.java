@@ -15,6 +15,6 @@ import org.springframework.stereotype.Repository;
         
         List<Cliente> findByNome(String nome);
         List<Cliente> findByNomeContaining(String nome);
-        
+        Cliente findByEmail(String email);
         
     }
